@@ -3,11 +3,11 @@ require 'HTTParty'
 require 'mechanize'
 
 def search_link(page, visited_pages)
-  index = 1
+  index = 0
   while true
-    link_location = page.search('//div[@class="mw-parser-output"]/p/a')
+    link_location = page.search('//div[@id="bodyContent"]/div[@id="mw-content-text"]/div[@class="mw-parser-output"]/p/a')
     link = link_location[index].attributes["href"].value if link_exists?(link_location, index)
-    return link unless !link || invalid_wiki_link?(link, visited_pages)
+    return link unless !link || invalid_wiki_link?(link, visited_pages) || link.include?("abbreviations")
     index += 1
   end
 end
