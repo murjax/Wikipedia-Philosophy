@@ -6,10 +6,12 @@ def search_link(page, visited_pages)
   index = 1
   link = nil
 
-  while !link && !visited_pages.include?(page.title)
+  while !link
     link_location = page.search('//div[@class="mw-parser-output"]/p/a')
     link = link_location[index].attributes["href"].value if link_exists?(link_location, index)
-    link = nil if link && external_link?(link)
+    if link
+      link = nil if external_link?(link) || was_visited?(link, visited_pages)
+    end
     index += 1
   end
   link
@@ -23,6 +25,11 @@ def external_link?(link)
   link.include?("http")
 end
 
+def was_visited?(link, visited_pages)
+  visited_pages.each { |page| return true if page.include?(link) }
+  false
+end
+
 puts "Please enter the title of your page:"
 page_title = gets
 puts page_title
@@ -33,10 +40,8 @@ visited_pages = []
 while page.title != "Philosophy - Wikipedia" do
   puts page.title
   first_link = search_link(page, visited_pages)
-  require 'pry'; binding.pry;
-
   next_page = "http://www.wikipedia.org/#{first_link}"
-  visited_pages.push(page.title)
+  visited_pages.push(page.uri.to_s)
   page = mechanize.get(next_page)
 end
 
