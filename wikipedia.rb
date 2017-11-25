@@ -4,18 +4,18 @@ require 'mechanize'
 
 def search_link(page, visited_pages)
   index = 1
-  link = nil
-
-  while !link
+  while true
     link_location = page.search('//div[@class="mw-parser-output"]/p/a')
     link = link_location[index].attributes["href"].value if link_exists?(link_location, index)
-    if link
-      link = nil if external_link?(link) || was_visited?(link, visited_pages)
-    end
+    return link unless !link || invalid_wiki_link?(link, visited_pages)
     index += 1
   end
-  link
 end
+
+def invalid_wiki_link?(link, visited_pages)
+  external_link?(link) || was_visited?(link, visited_pages)
+end
+
 
 def link_exists?(link_location, index)
   link_location && link_location[index] && link_location[index].attributes["href"]
@@ -30,21 +30,24 @@ def was_visited?(link, visited_pages)
   false
 end
 
-puts "Please enter the title of your page:"
-page_title = gets
-puts page_title
-mechanize = Mechanize.new
-page = mechanize.get("http://wikipedia.org/wiki/#{page_title}")
-visited_pages = []
+def start
+  puts "Please enter the title of your page:"
+  page_title = gets
+  puts page_title
+  mechanize = Mechanize.new
+  page = mechanize.get("http://wikipedia.org/wiki/#{page_title}")
+  visited_pages = []
 
-while page.title != "Philosophy - Wikipedia" do
+  while page.title != "Philosophy - Wikipedia" do
+    puts page.title
+    first_link = search_link(page, visited_pages)
+    next_page = "http://www.wikipedia.org/#{first_link}"
+    visited_pages.push(page.uri.to_s)
+    page = mechanize.get(next_page)
+  end
+
   puts page.title
-  first_link = search_link(page, visited_pages)
-  next_page = "http://www.wikipedia.org/#{first_link}"
-  visited_pages.push(page.uri.to_s)
-  page = mechanize.get(next_page)
+  puts "Done!"
 end
 
-puts page.title
-puts "Done!"
-
+start
