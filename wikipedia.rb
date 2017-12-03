@@ -1,34 +1,7 @@
 require 'Nokogiri'
 require 'HTTParty'
 require 'mechanize'
-
-def search_link(page, visited_pages)
-  index = 0
-  while true
-    link_location = page.search('//div[@id="bodyContent"]/div[@id="mw-content-text"]/div[@class="mw-parser-output"]/p/a')
-    link = link_location[index].attributes["href"].value if link_exists?(link_location, index)
-    return link unless !link || invalid_wiki_link?(link, visited_pages) || link.include?("abbreviations")
-    index += 1
-  end
-end
-
-def invalid_wiki_link?(link, visited_pages)
-  external_link?(link) || was_visited?(link, visited_pages)
-end
-
-
-def link_exists?(link_location, index)
-  link_location && link_location[index] && link_location[index].attributes["href"]
-end
-
-def external_link?(link)
-  link.include?("http")
-end
-
-def was_visited?(link, visited_pages)
-  visited_pages.each { |page| return true if page.include?(link) }
-  false
-end
+require_relative 'page.rb'
 
 def start
   puts "Please enter the title of your page:"
@@ -40,7 +13,8 @@ def start
 
   while page.title != "Philosophy - Wikipedia" do
     puts page.title
-    first_link = search_link(page, visited_pages)
+    current_page = Page.new(page, visited_pages)
+    first_link = current_page.search_link
     next_page = "http://www.wikipedia.org/#{first_link}"
     visited_pages.push(page.uri.to_s)
     page = mechanize.get(next_page)
