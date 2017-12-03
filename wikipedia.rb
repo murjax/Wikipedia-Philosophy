@@ -6,21 +6,34 @@ require_relative 'page'
 class Wikipedia
   def initialize
     @visited_pages = []
-    @page_title = Input.get_page_title
-    @current_page = Page.new(@page_title, @visited_pages);
+    @current_page = Page.new(Input.get_page_title, @visited_pages);
     start
   end
 
   def start
     while @current_page.title != "Philosophy - Wikipedia" do
-      puts @current_page.title
-      next_page_title = @current_page.search_link
-      @visited_pages.push(@current_page.uri)
-      @current_page = Page.new(next_page_title, @visited_pages)
+      mark_page_visited
+      @current_page = Page.new(@current_page.search_link, @visited_pages)
     end
+    show_completion_message
+  end
 
+  def mark_page_visited
+    show_page_title
+    add_to_visited
+  end
+
+  def add_to_visited
+    @visited_pages.push(@current_page.uri)
+  end
+
+  def show_page_title
     puts @current_page.title
-    puts "Done!"
+  end
+
+  def show_completion_message
+    show_page_title
+    puts 'Done!'
   end
 end
 
