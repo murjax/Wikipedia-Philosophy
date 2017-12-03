@@ -18,7 +18,7 @@ class Page
 
   def search_link
     while true
-      return next_page_link unless !next_page_link || link_invalid?
+      return strip_wiki(next_page_link) unless !next_page_link || link_invalid?
       @index += 1
     end
   end
@@ -33,6 +33,10 @@ class Page
 
   def next_page_link
     search_body_for_link[@index].attributes["href"].value if link_exists?(search_body_for_link)
+  end
+
+  def strip_wiki(link)
+    link.gsub('/wiki/', '')
   end
 
   def link_exists?(link_location)
