@@ -1,8 +1,13 @@
+require 'mechanize'
+
 class Page
   attr_reader :current_page, :visited_pages
 
-  def initialize(current_page, visited_pages)
-    @current_page = current_page
+  def initialize(current_page_title, visited_pages)
+    mechanize = Mechanize.new
+    current_page_url = "http://www.wikipedia.org/wiki/#{current_page_title}"
+
+    @current_page = mechanize.get(current_page_url)
     @visited_pages = visited_pages
     @index = 0
   end
@@ -36,6 +41,14 @@ class Page
 
   def external_link?(link)
     link.include?("http")
+  end
+
+  def title
+    current_page.title
+  end
+
+  def uri
+    current_page.uri.to_s
   end
 
   def was_visited?(link, visited_pages)

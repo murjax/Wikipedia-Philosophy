@@ -1,26 +1,20 @@
 require 'Nokogiri'
 require 'HTTParty'
-require 'mechanize'
-require_relative 'page.rb'
+require_relative 'input'
+require_relative 'page'
 
 def start
-  puts "Please enter the title of your page:"
-  page_title = gets
-  puts page_title
-  mechanize = Mechanize.new
-  page = mechanize.get("http://wikipedia.org/wiki/#{page_title}")
-  visited_pages = []
+  visited_pages = [];
+  page_title = Input.get_page_title;current_page = Page.new(page_title, visited_pages);
 
-  while page.title != "Philosophy - Wikipedia" do
-    puts page.title
-    current_page = Page.new(page, visited_pages)
-    first_link = current_page.search_link
-    next_page = "http://www.wikipedia.org/#{first_link}"
-    visited_pages.push(page.uri.to_s)
-    page = mechanize.get(next_page)
+  while current_page.title != "Philosophy - Wikipedia" do
+    puts current_page.title
+    next_page_title = current_page.search_link
+    visited_pages.push(current_page.uri)
+    current_page = Page.new(next_page_title, visited_pages)
   end
 
-  puts page.title
+  puts current_page.title
   puts "Done!"
 end
 
